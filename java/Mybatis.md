@@ -259,3 +259,55 @@ b>mapper接口中方法的方法名和映射文件中编写SQL的标签的id属�
 
  FATAL(致命)>ERROR(错误)>WARN(警告)>INFO(信息)>DEBUG(调试) 从左到右打印的内容越来越详细
 
+#### MyBatis获取参数的两种方式
+
+MyBatis获取参数的两种方式：#{} 、${}
+
+${}：本质是字符串拼接。注意该方法会引起SQL注入，若为字符串类型或日期类型的字段进行赋值时，需要手动加单号；
+
+#{}：占位符赋值（推荐使用）。
+
+##### 1、单个字面量参数
+
+若mapper接口中的方法参数为单个的字面量类型
+
+此时可以使用${}和#{}以任意的名称获取参数的值，注意${}需要手动加单引号
+
+##### 2、多个字面量类型参数的参数
+
+若mapper接口中的方法参数为多个时 
+
+此时MyBatis会自动将这些参数放在一个map集合中，
+
+以arg0,arg1...为键，以参数为值；
+
+以 param1,param2...为键，以参数为值；
+
+因此只需要通过${}和#{}访问map集合的键就可以获取相 对应的 值，注意${}需要手动加单引号
+
+##### 3、Map集合类型为参数
+
+若mapper接口中的方法需要多个参数时，可手动创建map集合，将数据放在map集合中。
+
+通过map集合中的键访问参数值。（#{}。${}需要手动添加单引号）。
+
+##### 4、实体类型的参数
+
+mapper接口方法中的参数为实体类型，可以通过实体类属性名获取值（#{} 。 ${}需要手动添加单引号）
+
+##### 5、使用@Param注解
+
+当mapper接口传递多参数的时候可以使用@Param注解标注参数名。
+
+```java
+//mapper接口
+public int fn(@Param("username") String username,@Param(password) String password);
+```
+
+```xml
+<!--xml SQl语句-->
+<select id="fn" resultType="User">
+	select * from t_user where username = #{username} and password = #{password}
+</select>
+```
+
