@@ -80,8 +80,13 @@ MySQL 8版本的url： jdbc:mysql://localhost:3306/ssm?serverTimezone=UTC
         plugins?,environments?,databaseIdProvider?,mappers?
     -->
 
-    <!--引入properties文件，此后就可以在当前文件中使用${key}的方式访问value-->
-    <properties resource="jdbc.properties" />
+    <!--引入properties文件，此后就可以在当前文件中使用的方式访问value-->
+    <properties resource="jdbc.properties"/>
+    
+    <settings>
+        <!--将下划线映射为驼峰-->
+        <setting name="mapUnderscoreToCamelCase" value="true"/>
+    </settings>
 
     <!--
         typeAliases：设置类型别名，即为某个具体的类型设置一个别名
@@ -96,7 +101,7 @@ MySQL 8版本的url： jdbc:mysql://localhost:3306/ssm?serverTimezone=UTC
         <!--若不设置alias，当前的类型拥有默认的别名，即类名且不区分大小写-->
         <!--<typeAlias type="com.atguigu.mybatis.pojo.User"></typeAlias>-->
         <!--通过包设置类型别名，指定包下所有的类型将全部拥有默认的别名，即类名且不区分大小写-->
-        <package name="com.atguigu.mybatis.pojo"/>
+        <package name="org.soft.model"/>
     </typeAliases>
 
     <!--
@@ -136,29 +141,28 @@ MySQL 8版本的url： jdbc:mysql://localhost:3306/ssm?serverTimezone=UTC
                 <property name="password" value="${jdbc.password}"/>
             </dataSource>
         </environment>
-
-        <environment id="test">
-            <transactionManager type="JDBC"/>
-            <dataSource type="POOLED">
-                <property name="driver" value="com.mysql.cj.jdbc.Driver"/>
-                <property name="url" value="jdbc:mysql://localhost:3306/ssm?serverTimezone=UTC"/>
-                <property name="username" value="root"/>
-                <property name="password" value="123456"/>
-            </dataSource>
-        </environment>
     </environments>
 
     <!--引入mybatis的映射文件-->
     <mappers>
-        <!--<mapper resource="mappers/UserMapper.xml"/>-->
+        <!--        <mapper resource="mappers/UserMapper.xml"/>-->
         <!--
             以包的方式引入映射文件，但是必须满足两个条件：
             1、mapper接口和映射文件所在的包必须一致
             2、mapper接口的名字和映射文件的名字必须一致
         -->
-        <package name="com.atguigu.mybatis.mapper"/>
+        <package name="org/soft/mapper"/>
     </mappers>
 </configuration>
+```
+
+jdbc.properties
+
+```properties
+jdbc.driver=com.mysql.cj.jdbc.Driver
+jdbc.url=jdbc:mysql://localhost:3306/ssm_study?serverTimezone=UTC
+jdbc.username=root
+jdbc.password=123456
 ```
 
 ##### 3、MyBatis映射文件
@@ -309,5 +313,43 @@ public int fn(@Param("username") String username,@Param(password) String passwor
 <select id="fn" resultType="User">
 	select * from t_user where username = #{username} and password = #{password}
 </select>
+```
+
+#### 特殊SQL执行
+
+##### 1、模糊查询
+
+```java
+//接口
+List<User> getUserByLike(@Param("username") String username);
+```
+
+```xml
+<select id="getUserByLike" resultType="User">
+        <!--select * from t_user where username like '%${username}%'-->
+        <!--select * from t_user where username like concat('%',#{username},'%')-->
+        select * from t_user where username like "%"#{username}"%"
+</select>
+```
+
+##### 2、获取主键
+
+```java
+/**
+* 添加用户信息
+* @param user
+* @return
+* useGeneratedKeys：设置使用自增的主键
+* keyProperty：因为增删改有统一的返回值是受影响的行数，因此只能将获取的自增的主键放在传输的参
+数user对象的某个属性中
+*/
+int insertUser(User user);
+```
+
+```xml
+<!--int insertUser(User user);-->
+<insert id="insertUser" useGeneratedKeys="true" keyProperty="id">
+	insert into t_user values(null,#{username},#{password},#{age},#{sex})
+</insert>
 ```
 
