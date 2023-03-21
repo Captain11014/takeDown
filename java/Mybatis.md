@@ -353,3 +353,154 @@ int insertUser(User user);
 </insert>
 ```
 
+#### resultMap标签
+
+##### 1、resultMap处理字段和属性的映射关系
+
+若字段名和实体类中的属性名不一致，则可以通过resultMap设置自定义映射
+
+```xml
+<!--
+resultMap：设置自定义映射
+属性：
+id：表示自定义映射的唯一标识
+type：查询的数据要映射的实体类的类型
+子标签：
+id：设置主键的映射关系
+result：设置普通字段的映射关系
+association：设置多对一的映射关系
+collection：设置一对多的映射关系
+属性：
+property：设置映射关系中实体类中的属性名
+column：设置映射关系中表中的字段名
+-->
+<resultMap id="userMap" type="User">
+    <id property="id" column="id"></id>
+    <result property="userName" column="user_name"></result>
+    <result property="password" column="password"></result>
+    <result property="age" column="age"></result>
+    <result property="sex" column="sex"></result>
+</resultMap>
+<!--List<User> testMohu(@Param("mohu") String mohu);-->
+<select id="testMohu" resultMap="userMap">
+    <!--select * from t_user where username like '%${mohu}%'-->
+    select id,user_name,password,age,sex from t_user where user_name like
+    concat('%',#{mohu},'%')
+</select>
+
+```
+
+若字段名和实体类中的属性名不一致，但是字段名符合数据库的规则（使用_），实体类中的属性 名符合Java的规则（使用驼峰） 
+
+此时也可通过以下两种方式处理字段名和实体类中的属性的映射关系 
+
+a>可以通过为字段起别名的方式，保证和实体类中的属性名保持一致 
+
+_b>可以在MyBatis的核心配置文件中设置一个全局配置信息mapUnderscoreToCamelCase，可 以在查询表中数据时，自动将_类型的字段名转换为驼峰 
+
+例如：字段名user_name，设置了mapUnderscoreToCamelCase，此时字段名就会转换为 userName
+
+##### 2、多对一处理映射
+
+###### 1、级联方式处理映射
+
+```xml
+<!--多对一： 级联方式映射-->
+    <resultMap id="empDeptMap" type="Emp">
+        <id column="emp_id" property="empId"></id>
+        <result column="emp_name" property="empName"/>
+        <result column="age" property="age"/>
+        <result column="gender" property="gender"/>
+        <result column="dept_id" property="deptId"/>
+        <result column="dept_id" property="dept.deptId"/>
+        <result column="dept_name" property="dept.deptName"/>
+    </resultMap>
+    
+    <select id="getEmpDeptById" parameterType="int" resultMap="empDeptMap">
+        select emp.*,dept.*
+        from t_emp emp
+            left join t_dept dept
+                on emp.dept_id = dept.dept_id
+        where emp.emp_id = 1
+    </select>
+```
+
+###### 2、使用association处理映射关系
+
+```xml
+<!--使用association处理映射关系-->
+    <resultMap id="empDeptMap_ass" type="Emp">
+        <id column="emp_id" property="empId"></id>
+        <result column="emp_name" property="empName"/>
+        <result column="age" property="age"/>
+        <result column="gender" property="gender"/>
+        <result column="dept_id" property="deptId"/>
+        <!--
+            property: 实体类属性
+            javaType: 实体类型
+         -->
+        <association property="dept" javaType="Dept">
+            <id column="dept_id" property="deptId"></id>
+            <result column="dept_name" property="deptName"/>
+        </association>
+    </resultMap>
+    <select id="getEmpDeptById_ass" parameterType="int" resultMap="empDeptMap">
+        select emp.*,dept.*
+        from t_emp emp
+        left join t_dept dept
+        on emp.dept_id = dept.dept_id
+        where emp.emp_id = 1
+    </select>
+```
+
+###### 3、使用分布查询
+
+1、先查询员工信息
+
+```java
+/**
+     * 使用分步查询，先查询出员工信息
+     * @param empId
+     * @return
+     */
+    List<Emp> getEmpDeptMap_step(@Param("empId") int empId);
+```
+
+```xml
+ <!--使用分步查询处理多对一-->
+    <resultMap id="empDeptMap_step" type="Emp">
+        <id column="emp_id" property="empId"></id>
+        <result column="emp_name" property="empName"/>
+        <result column="age" property="age"/>
+        <result column="gender" property="gender"/>
+        <result column="dept_id" property="deptId"/>
+        <!--
+            property: 实体类属性
+            select: 设置分步查询，查询某个属性的值的sql的标识（namespace.sqlId）
+            column：将sql以及查询结果中的某个字段设置为分步查询的条件
+         -->
+        <association property="dept" select="org.soft.mapper.DeptMapper.getDeptById" column="dept_id"/>
+    </resultMap>
+
+    <select id="getEmpDeptMap_step" resultMap="empDeptMap_step" parameterType="int">
+        select * from t_emp where emp_id = #{empId}
+    </select>
+```
+
+2、根据员工部门id查询部门信息
+
+```java
+Dept getDeptById(@Param("deptId") int deptId);
+```
+
+```xml
+	<resultMap id="deptResultMap" type="Dept">
+        <id column="dept_id" property="deptId"/>
+        <result column="dept_name" property="deptName"/>
+    </resultMap>
+    
+    <select id="getDeptById" resultMap="deptResultMap" parameterType="int">
+        select * from t_dept where dept_id = #{deptId}
+    </select>
+```
+
