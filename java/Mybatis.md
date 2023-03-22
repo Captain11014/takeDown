@@ -1,6 +1,6 @@
 # Mybatis
 
-#### 环境搭建
+#### 一、环境搭建
 
 构建工具：maven 3.5.4 
 
@@ -24,9 +24,9 @@ MySQL 8版本的url： jdbc:mysql://localhost:3306/ssm?serverTimezone=UTC
 
 否则运行测试用例报告如下错误： java.sql.SQLException: The server time zone value 'ÖÐ¹ú±ê×¼Ê±¼ä' is unrecognized or represents more
 
-#### 核心配置文件
+#### 二、核心配置文件
 
-##### 1、依赖包
+##### 2.1、依赖包
 
 ```xml
  <dependencies>
@@ -59,7 +59,7 @@ MySQL 8版本的url： jdbc:mysql://localhost:3306/ssm?serverTimezone=UTC
 
 ```
 
-##### 2、MyBatis核心配置文件
+##### 2.2、MyBatis核心配置文件
 
 习惯上命名为mybatis-config.xml，这个文件名仅仅只是建议，并非强制要求。将来整合Spring 之后，这个配置文件可以省略。
 
@@ -165,7 +165,7 @@ jdbc.username=root
 jdbc.password=123456
 ```
 
-##### 3、MyBatis映射文件
+##### 2.3、MyBatis映射文件
 
 1、映射文件的命名规则： 
 
@@ -218,7 +218,7 @@ b>mapper接口中方法的方法名和映射文件中编写SQL的标签的id属�
 
 ```
 
-##### 4、加入log4j日志功能
+##### 2.4、加入log4j日志功能
 
 ###### （1）添加依赖
 
@@ -263,7 +263,7 @@ b>mapper接口中方法的方法名和映射文件中编写SQL的标签的id属�
 
  FATAL(致命)>ERROR(错误)>WARN(警告)>INFO(信息)>DEBUG(调试) 从左到右打印的内容越来越详细
 
-#### MyBatis获取参数的两种方式
+#### 三、MyBatis获取参数的两种方式
 
 MyBatis获取参数的两种方式：#{} 、${}
 
@@ -271,13 +271,13 @@ ${}：本质是字符串拼接。注意该方法会引起SQL注入，若为字�
 
 #{}：占位符赋值（推荐使用）。
 
-##### 1、单个字面量参数
+##### 3.1、单个字面量参数
 
 若mapper接口中的方法参数为单个的字面量类型
 
 此时可以使用${}和#{}以任意的名称获取参数的值，注意${}需要手动加单引号
 
-##### 2、多个字面量类型参数的参数
+##### 3.2、多个字面量类型参数的参数
 
 若mapper接口中的方法参数为多个时 
 
@@ -289,17 +289,17 @@ ${}：本质是字符串拼接。注意该方法会引起SQL注入，若为字�
 
 因此只需要通过${}和#{}访问map集合的键就可以获取相 对应的 值，注意${}需要手动加单引号
 
-##### 3、Map集合类型为参数
+##### 3.3、Map集合类型为参数
 
 若mapper接口中的方法需要多个参数时，可手动创建map集合，将数据放在map集合中。
 
 通过map集合中的键访问参数值。（#{}。${}需要手动添加单引号）。
 
-##### 4、实体类型的参数
+##### 3.4、实体类型的参数
 
 mapper接口方法中的参数为实体类型，可以通过实体类属性名获取值（#{} 。 ${}需要手动添加单引号）
 
-##### 5、使用@Param注解
+##### 3.5、使用@Param注解
 
 当mapper接口传递多参数的时候可以使用@Param注解标注参数名。
 
@@ -315,9 +315,9 @@ public int fn(@Param("username") String username,@Param(password) String passwor
 </select>
 ```
 
-#### 特殊SQL执行
+#### 四、特殊SQL执行
 
-##### 1、模糊查询
+##### 4.1、模糊查询
 
 ```java
 //接口
@@ -332,7 +332,7 @@ List<User> getUserByLike(@Param("username") String username);
 </select>
 ```
 
-##### 2、获取主键
+##### 4.2、获取主键
 
 ```java
 /**
@@ -353,9 +353,9 @@ int insertUser(User user);
 </insert>
 ```
 
-#### resultMap标签
+#### 五、resultMap标签
 
-##### 1、resultMap处理字段和属性的映射关系
+##### 5.1、resultMap处理字段和属性的映射关系
 
 若字段名和实体类中的属性名不一致，则可以通过resultMap设置自定义映射
 
@@ -400,9 +400,9 @@ _b>可以在MyBatis的核心配置文件中设置一个全局配置信息mapUnde
 
 例如：字段名user_name，设置了mapUnderscoreToCamelCase，此时字段名就会转换为 userName
 
-##### 2、多对一处理映射
+##### 5.2、多对一处理映射
 
-###### 1、级联方式处理映射
+###### （1）级联方式处理映射
 
 ```xml
 <!--多对一： 级联方式映射-->
@@ -425,7 +425,7 @@ _b>可以在MyBatis的核心配置文件中设置一个全局配置信息mapUnde
     </select>
 ```
 
-###### 2、使用association处理映射关系
+###### （2）使用association处理映射关系
 
 ```xml
 <!--使用association处理映射关系-->
@@ -453,7 +453,7 @@ _b>可以在MyBatis的核心配置文件中设置一个全局配置信息mapUnde
     </select>
 ```
 
-###### 3、使用分布查询
+###### （3）使用分布查询
 
 1、先查询员工信息
 
@@ -502,5 +502,207 @@ Dept getDeptById(@Param("deptId") int deptId);
     <select id="getDeptById" resultMap="deptResultMap" parameterType="int">
         select * from t_dept where dept_id = #{deptId}
     </select>
+```
+
+##### 5.3、一对多映射处理
+
+###### （1）使用collection处理一对多映射
+
+```java
+	/**
+     * 使用collection处理一对多映射
+     * @param deptId
+     * @return
+     */
+    Dept getDeptAndEmpsById(@Param("deptId") int deptId);
+```
+
+```xml
+ <!--使用collection处理一对多映射-->
+    <resultMap id="deptAndEmpsResultMap" type="Dept">
+        <id column="dept_id" property="deptId"/>
+        <result column="dept_name" property="deptName"/>
+        <!--
+            ofType：设置collection标签所处理的集合属性中存储数据的类型
+        -->
+        <collection property="emps" ofType="Emp">
+            <id column="emp_id" property="empId"></id>
+            <result column="emp_name" property="empName"/>
+            <result column="age" property="age"/>
+            <result column="gender" property="gender"/>
+            <result column="dept_id" property="deptId"/>
+        </collection>
+    </resultMap>
+    <select id="getDeptAndEmpsById" resultMap="deptAndEmpsResultMap" parameterType="int">
+        select * from t_dept d left join t_emp e on d.dept_id = e.dept_id  where d.dept_id = #{deptId}
+    </select>
+```
+
+###### （2）使用分步查询处理一对多
+
+查询部门信息
+
+```java
+/**
+     * 使用分步查询处理一对多映射关系，查询部门信息
+     * @param deptId
+     * @return
+     */
+    Dept getDeptAndEmpById(@Param("deptId") int deptId);
+```
+
+```xml
+<!--分步查询处理一对多映射-->
+    <resultMap id="deptAndEmpsMap" type="Dept">
+        <id column="dept_id" property="deptId"/>
+        <result column="dept_name" property="deptName"/>
+        <collection property="emps" select="org.soft.mapper.EmpMapper.getEmps" column="dept_id"/>
+    </resultMap>
+
+    <select id="getDeptAndEmpById" resultMap="deptAndEmpsMap" parameterType="int">
+        select * from t_dept where dept_id = #{deptId}
+    </select>
+```
+
+查询部门对应的员工信息
+
+```java
+/**
+     * 使用分步查询处理一对多映射关系。查询部门员工信息
+     * @param deptId
+     * @return
+     */
+    List<Emp> getEmps(@Param("deptId") int deptId);
+```
+
+```xml
+ <!--使用分步查询处理一对多映射关系。查询部门员工信息-->
+    <resultMap id="empsResultMap"  type="Emp">
+        <id column="emp_id" property="empId"></id>
+        <result column="emp_name" property="empName"/>
+        <result column="age" property="age"/>
+        <result column="gender" property="gender"/>
+        <result column="dept_id" property="deptId"/>
+    </resultMap>
+    <select id="getEmps" parameterType="int" resultMap="empsResultMap">
+        select * from t_emp where dept_id = #{deptId}
+    </select>
+```
+
+分步查询的优点：可以实现延迟加载 但是必须在核心配置文件中设置全局配置信息： lazyLoadingEnabled：延迟加载的全局开关。当开启时，所有关联对象都会延迟加载 aggressiveLazyLoading：当开启时，任何方法的调用都会加载该对象的所有属性。否则，每个属 性会按需加载 此时就可以实现按需加载，获取的数据是什么，就只会执行相应的sql。此时可通过association和 collection中的fetchType属性设置当前的分步查询是否使用延迟加载， fetchType="lazy(延迟加 载)|eager(立即加载)"
+
+#### 六、动态SQL
+
+```xml
+ <!--
+        动态SQL：
+        1、if，通过test属性中的表达式判断标签中的内容是否有效（是否会拼接到sql中）
+        2、where
+        a.若where标签中有条件成立，会自动生成where关键字
+        b.会自动将where标签中内容前多余的and去掉，但是其中内容后多余的and无法去掉
+        c.若where标签中没有任何一个条件成立，则where没有任何功能
+        3、trim
+        prefix、suffix：在标签中内容前面或后面添加指定内容
+        prefixOverrides、suffixOverrides：在标签中内容前面或后面去掉指定内容
+        4、choose、when、otherwise
+        相当于java中的if...else if...else
+        when至少设置一个，otherwise最多设置一个
+        5、foreach
+        collection：设置要循环的数组或集合
+        item：用一个字符串表示数组或集合中的每一个数据
+        separator：设置每次循环的数据之间的分隔符
+        open：循环的所有内容以什么开始
+        close：循环的所有内容以什么结束
+        6、sql片段
+        可以记录一段sql，在需要用的地方使用include标签进行引用
+        <sql id="empColumns">
+            emp_id,emp_name,age,gender,dept_id
+        </sql>
+        <include refid="empColumns"></include>
+    -->
+
+    <sql id="empColumns">
+        emp_id,emp_name,age,gender,dept_id
+    </sql>
+
+    <!--List<Emp> getEmpByCondition(Emp emp);-->
+    <select id="getEmpByCondition" resultType="Emp">
+        select <include refid="empColumns"></include> from t_emp
+        <trim prefix="where" suffixOverrides="and">
+            <if test="empName != null and empName != ''">
+                emp_name = #{empName} and
+            </if>
+            <if test="age != null and age != ''">
+                age = #{age} and
+            </if>
+            <if test="gender != null and gender != ''">
+                gender = #{gender}
+            </if>
+        </trim>
+    </select>
+    <select id="getEmpByConditionTwo" resultType="Emp">
+        select * from t_emp
+        <where>
+            <if test="empName != null and empName != ''">
+                emp_name = #{empName}
+            </if>
+            <if test="age != null and age != ''">
+                and age = #{age}
+            </if>
+            <if test="gender != null and gender != ''">
+                and gender = #{gender}
+            </if>
+        </where>
+    </select>
+    <select id="getEmpByConditionOne" resultType="Emp">
+        select * from t_emp where 1=1
+        <if test="empName != null and empName != ''">
+            and emp_name = #{empName}
+        </if>
+        <if test="age != null and age != ''">
+            and age = #{age}
+        </if>
+        <if test="gender != null and gender != ''">
+            and gender = #{gender}
+        </if>
+    </select>
+
+    <!--List<Emp> getEmpByChoose(Emp emp);-->
+    <select id="getEmpByChoose" resultType="Emp">
+        select * from t_emp
+        <where>
+            <choose>
+                <when test="empName != null and empName != ''">
+                    emp_name = #{empName}
+                </when>
+                <when test="age != null and age != ''">
+                    age = #{age}
+                </when>
+                <when test="gender != null and gender != ''">
+                    gender = #{gender}
+                </when>
+            </choose>
+        </where>
+    </select>
+
+    <!--void insertMoreEmp(@Param("emps") List<Emp> emps);-->
+    <insert id="insertMoreEmp">
+        insert into t_emp values
+        <foreach collection="emps" item="emp" separator=",">
+            (null,#{emp.empName},#{emp.age},#{emp.gender},null)
+        </foreach>
+    </insert>
+
+    <!--void deleteMoreEmp(@Param("empIds") Integer[] empIds);-->
+    <delete id="deleteMoreEmp">
+        <!--delete from t_emp where emp_id in
+        <foreach collection="empIds" item="empId" separator="," open="(" close=")">
+            #{empId}
+        </foreach>-->
+        delete from t_emp where
+        <foreach collection="empIds" item="empId" separator="or">
+            emp_id = #{empId}
+        </foreach>
+    </delete>
 ```
 
