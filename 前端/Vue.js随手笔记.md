@@ -224,3 +224,25 @@ calc()：这个函数就是用来计算长度值的，可以加减乘除一个�
 height: calc(100% - 100px);
 ```
 
+### **富文本插件quill生成内容后，字体样式未生效**
+
+1、在富文本编辑器内，对文字进行了排版，以下为文字居中样式
+
+2、在页面里使用v-html渲染富文本代码时，出现ql-align-center的class名，但是居中并未生效
+
+解决办法：
+
+1、在需要显示富文本样式的项目中，安装quill：npm i quill；
+
+2、页面里引入样式css文件：import "quill/dist/quill.core.css"；
+
+```vue
+import "quill/dist/quill.core.css";
+```
+
+3、使用v-html的标签上加入class类名：class="ql-editor"；
+
+```vue
+<span class="ql-editor" v-html="article.content"></span>
+```
+
